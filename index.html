@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HashGen — Free AI Hashtag & Caption Generator</title>
+  <meta name="description" content="Generate viral hashtags and captions for TikTok, Instagram Reels, and YouTube Shorts instantly. Free AI-powered tool." />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #08080f;
+      --surface: #111118;
+      --border: #ffffff0f;
+      --pink: #ff2d78;
+      --purple: #7c3aed;
+      --blue: #2563eb;
+      --green: #00e5a0;
+      --text: #f0f0f0;
+      --muted: #555;
+      --label: #888;
+    }
+
+    body {
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 15% 15%, #1a0830 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 85%, #080f2a 0%, transparent 55%);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px 16px 80px;
+    }
+
+    /* HEADER */
+    .header { text-align: center; margin-bottom: 40px; }
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--pink), var(--purple), var(--blue));
+      border-radius: 20px; padding: 2px; margin-bottom: 20px;
+    }
+    .badge-inner {
+      background: var(--bg); border-radius: 18px;
+      padding: 8px 22px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 3px; color: #ccc;
+    }
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(44px, 12vw, 72px);
+      font-weight: 900; line-height: 1;
+      background: linear-gradient(135deg, #fff 20%, #a78bfa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 16px; }
+
+    /* CARD */
+    .card {
+      max-width: 540px; margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 28px; padding: 28px;
+      box-shadow: 0 0 80px #7c3aed10;
+    }
+
+    /* PLATFORM TABS */
+    .tabs { display: flex; gap: 8px; margin-bottom: 22px; }
+    .tab {
+      flex: 1; padding: 11px 6px;
+      border-radius: 14px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .tab.active {
+      border-color: var(--purple);
+      background: #7c3aed18; color: #c4b5fd;
+    }
+
+    /* INPUTS */
+    .field { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 2px;
+      color: var(--label); margin-bottom: 8px;
+    }
+    textarea, select {
+      width: 100%; background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px; color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; padding: 14px 16px;
+      outline: none; resize: none;
+      transition: border-color 0.2s;
+    }
+    textarea:focus, select:focus { border-color: #7c3aed55; }
+    textarea { line-height: 1.5; }
+    select { cursor: pointer; }
+
+    /* TONE PILLS */
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .pill {
+      padding: 8px 16px; border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .pill.active {
+      border-color: #00e5a055;
+      background: #00e5a010; color: var(--green);
+    }
+
+    /* ERROR */
+    .error {
+      background: #ff2d7812; border: 1px solid #ff2d7830;
+      border-radius: 14px; padding: 12px 16px;
+      color: #ff7aaa; font-size: 14px;
+      margin-bottom: 16px; display: none;
+    }
+    .error.show { display: block; }
+
+    /* GENERATE BUTTON */
+    .btn-generate {
+      width: 100%; padding: 16px;
+      border-radius: 16px; border: none;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: #fff; font-family: 'Syne', sans-serif;
+      font-size: 17px; font-weight: 800;
+      cursor: pointer; transition: opacity 0.2s;
+      letter-spacing: 0.3px;
+    }
+    .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-generate:hover:not(:disabled) { opacity: 0.9; }
+
+    /* LOADER */
+    .loader { text-align: center; padding: 20px; color: var(--muted); font-size: 14px; display: none; }
+    .loader.show { display: block; }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid #ffffff10;
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* RESULTS */
+    .results { max-width: 540px; margin: 20px auto 0; display: none; flex-direction: column; gap: 14px; }
+    .results.show { display: flex; }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 22px; padding: 22px;
+    }
+    .result-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+    .result-text { font-size: 15px; line-height: 1.7; color: var(--text); }
+    .result-cta { font-size: 14px; color: var(--blue); font-style: italic; margin-top: 10px; }
+
+    .result-card.hook { border-color: #ff2d7825; }
+    .result-card.hook .result-label { color: var(--pink); }
+    .result-card.caption .result-label { color: var(--purple); }
+    .result-card.tags .result-label { color: var(--green); }
+    .result-card.time { border-color: #2563eb25; flex-direction: row; align-items: center; gap: 14px; }
+    .result-card.time .result-label { color: var(--blue); margin-bottom: 4px; }
+    .clock { font-size: 24px; }
+
+    /* HASHTAG CHIPS */
+    .chips { display: flex; flex-wrap: wrap; gap: 0; }
+    .chip {
+      display: inline-block;
+      background: #ffffff08;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 14px; margin: 3px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px; color: #ccc;
+      cursor: pointer; transition: all 0.15s;
+      user-select: none;
+    }
+    .chip:hover { background: #ffffff14; color: #fff; }
+    .chip.copied { background: #00e5a015; border-color: #00e5a040; color: var(--green); }
+    .chip-hint { font-size: 10px; color: #333; font-family: 'DM Mono', monospace; margin-bottom: 10px; }
+
+    /* COPY ALL BTN */
+    .btn-copy {
+      width: 100%; padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-copy.copied { background: #00e5a010; border-color: #00e5a030; color: var(--green); }
+    .btn-copy:hover:not(.copied) { border-color: #ffffff22; color: #999; }
+
+    .btn-reset {
+      width: 100%; padding: 13px;
+      border-radius: 16px; border: 1px solid transparent;
+      background: transparent; color: #333;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px; cursor: pointer; transition: color 0.2s;
+    }
+    .btn-reset:hover { color: var(--muted); }
+
+    /* FOOTER */
+    .footer { text-align: center; margin-top: 40px; color: #2a2a3a; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="badge"><div class="badge-inner">FREE AI TOOL</div></div>
+    <h1>HashGen</h1>
+    <p class="subtitle">Viral hashtags & captions. Instant. No signup.</p>
+  </div>
+
+  <div class="card">
+    <!-- Platform -->
+    <div class="tabs">
+      <button class="tab active" data-platform="TikTok">TikTok</button>
+      <button class="tab" data-platform="Instagram Reels">Reels</button>
+      <button class="tab" data-platform="YouTube Shorts">YT Shorts</button>
+    </div>
+
+    <!-- Topic -->
+    <div class="field">
+      <label>YOUR TOPIC</label>
+      <textarea id="topic" rows="3" placeholder="e.g. 'morning routine', 'sneakers under $100', 'NBA trade drama'..."></textarea>
+    </div>
+
+    <!-- Category -->
+    <div class="field">
+      <label>NICHE</label>
+      <select id="category">
+        <option>Fashion & Style</option>
+        <option>Food & Recipes</option>
+        <option>Fitness & Health</option>
+        <option>Travel</option>
+        <option>Beauty & Makeup</option>
+        <option>Gaming</option>
+        <option>Comedy & Memes</option>
+        <option>Business & Money</option>
+        <option>Sports & NBA</option>
+        <option>Music & Dance</option>
+        <option>Tech & AI</option>
+        <option>Lifestyle & Motivation</option>
+      </select>
+    </div>
+
+    <!-- Tone -->
+    <div class="field">
+      <label>VIBE</label>
+      <div class="pills">
+        <button class="pill active" data-tone="Viral & Hype">Viral & Hype</button>
+        <button class="pill" data-tone="Chill & Aesthetic">Chill & Aesthetic</button>
+        <button class="pill" data-tone="Educational">Educational</button>
+        <button class="pill" data-tone="Funny & Sarcastic">Funny & Sarcastic</button>
+        <button class="pill" data-tone="Inspirational">Inspirational</button>
+      </div>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <button class="btn-generate" id="generateBtn" onclick="generate()">
+      ⚡ Generate Now
+    </button>
+  </div>
+
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    Cooking up your content...
+  </div>
+
+  <div class="results" id="results">
+    <div class="result-card hook">
+      <div class="result-label">🎬 SCROLL-STOPPING HOOK</div>
+      <div class="result-text" id="hookText"></div>
+    </div>
+
+    <div class="result-card caption">
+      <div class="result-label">✍️ CAPTION</div>
+      <div class="result-text" id="captionText"></div>
+      <div class="result-cta" id="ctaText"></div>
+    </div>
+
+    <div class="result-card tags">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div class="result-label" style="margin:0;" id="tagCount"># HASHTAGS</div>
+        <div class="chip-hint">tap to copy</div>
+      </div>
+      <div class="chips" id="chipsContainer"></div>
+    </div>
+
+    <div class="result-card time" style="display:flex;">
+      <div class="clock">⏰</div>
+      <div>
+        <div class="result-label">BEST POST TIME</div>
+        <div class="result-text" style="font-size:14px;" id="timeText"></div>
+      </div>
+    </div>
+
+    <button class="btn-copy" id="copyAllBtn" onclick="copyAll()">
+      Copy Caption + All Hashtags
+    </button>
+    <button class="btn-reset" onclick="reset()">Generate Another →</button>
+  </div>
+
+  <div class="footer">HashGen · Free forever · No signup required</div>
+
+  <script>
+    let platform = "TikTok";
+    let tone = "Viral & Hype";
+    let lastResult = null;
+
+    // Platform tabs
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        platform = tab.dataset.platform;
+      });
+    });
+
+    // Tone pills
+    document.querySelectorAll(".pill").forEach(pill => {
+      pill.addEventListener("click", () => {
+        document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+        pill.classList.add("active");
+        tone = pill.dataset.tone;
+      });
+    });
+
+    function showError(msg) {
+      const el = document.getElementById("error");
+      el.textContent = msg;
+      el.classList.add("show");
+    }
+
+    function hideError() {
+      document.getElementById("error").classList.remove("show");
+    }
+
+    async function generate() {
+      const topic = document.getElementById("topic").value.trim();
+      const category = document.getElementById("category").value;
+      hideError();
+
+      if (!topic) { showError("Drop a topic first 👆"); return; }
+
+      const btn = document.getElementById("generateBtn");
+      btn.disabled = true;
+      btn.textContent = "Generating...";
+      document.getElementById("loader").classList.add("show");
+      document.getElementById("results").classList.remove("show");
+
+      try {
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ topic, category, tone, platform })
+        });
+
+        const data = await res.json();
+        if (data.error) { showError(data.error); return; }
+
+        lastResult = data;
+        renderResults(data);
+        document.getElementById("results").classList.add("show");
+
+      } catch (e) {
+        showError("Something went wrong. Try again.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "⚡ Generate Now";
+        document.getElementById("loader").classList.remove("show");
+      }
+    }
+
+    function renderResults(data) {
+      document.getElementById("hookText").textContent = data.hook || "";
+      document.getElementById("captionText").textContent = data.caption || "";
+      document.getElementById("ctaText").textContent = data.cta || "";
+      document.getElementById("timeText").textContent = data.bestPostTime || "";
+      document.getElementById("tagCount").textContent = `# HASHTAGS (${data.hashtags?.length || 0})`;
+
+      const container = document.getElementById("chipsContainer");
+      container.innerHTML = "";
+      (data.hashtags || []).forEach(tag => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = `#${tag}`;
+        chip.addEventListener("click", () => {
+          navigator.clipboard.writeText(`#${tag}`);
+          chip.classList.add("copied");
+          chip.textContent = `✓ #${tag}`;
+          setTimeout(() => {
+            chip.classList.remove("copied");
+            chip.textContent = `#${tag}`;
+          }, 1500);
+        });
+        container.appendChild(chip);
+      });
+    }
+
+    function copyAll() {
+      if (!lastResult) return;
+      const tags = lastResult.hashtags.map(h => `#${h}`).join(" ");
+      const full = `${lastResult.caption}\n\n${lastResult.cta}\n\n${tags}`;
+      navigator.clipboard.writeText(full);
+      const btn = document.getElementById("copyAllBtn");
+      btn.classList.add("copied");
+      btn.textContent = "✓ Copied to clipboard!";
+      setTimeout(() => {
+        btn.classList.remove("copied");
+        btn.textContent = "Copy Caption + All Hashtags";
+      }, 2500);
+    }
+
+    function reset() {
+      document.getElementById("topic").value = "";
+      document.getElementById("results").classList.remove("show");
+      document.getElementById("topic").focus();
+    }
+
+    // Enter to generate
+    document.getElementById("topic").addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); generate(); }
+    });
+  </script>
+</body>
+</html>
